@@ -5,38 +5,59 @@ import teamData from './Data/dummyData.json';
 interface RoundSelectorProps {
   currentRound: number;
   handleRoundChange: (roundIndex: number) => void;
+  showAllRounds: () => void;  // Added for showing all rounds
 }
 
-// RoundSelector component to display buttons for selecting rounds
-const RoundSelector: React.FC<RoundSelectorProps> = ({ currentRound, handleRoundChange }) => {
+const RoundSelector: React.FC<RoundSelectorProps> = ({ currentRound, handleRoundChange, showAllRounds }) => {
   const [teamMembers, setTeamMembers] = useState<string[]>([]);
 
-  // Fetch team members from the teamData.json file on component mount
   useEffect(() => {
     setTeamMembers(teamData.members);
-  }, []); // Empty dependency array means it runs only once on component mount
+  }, []);
+
+  const active = (clickedButton: HTMLElement) => {
+    // Remove 'current' class from all buttons
+    const buttons = document.querySelectorAll('.round-button');
+    buttons.forEach(btn => {
+      btn.classList.remove('current');
+    });
+
+    // Check if 'current' class is already applied to any button
+    const currentButton = document.querySelector('.round-button.current');
+
+    // If 'current' class is not applied to any button, add it to the clicked button
+    if (!currentButton) {
+      clickedButton.classList.add('current');
+    } else {
+      // If 'current' class is applied to a button, remove it from that button and add it to the clicked button
+      currentButton.classList.remove('current');
+      clickedButton.classList.add('current');
+    }
+  };
+
 
   return (
     <div className="round-selector">
       <div className="flex items-center">
-        {/* Mapping over dummyDataRounds to render round buttons */}
         {dummyDataRounds.map((round, index) => (
           <button
             key={index}
             className={`round-button mr-4 ${currentRound === index ? "current" : ""}`}
-            onClick={() => handleRoundChange(index)}
+            onClick={(e) => {handleRoundChange(index); active(e.currentTarget)}}
           >
             Round {index + 1}
           </button>
         ))}
-        {/* Displaying team members */}
+        <button className="round-button mr-4 show-all-rounds" onClick={(e) => { showAllRounds(); active(e.currentTarget); }}>
+          Show All
+        </button>
         <span className="ml-4">
           Team members: {teamMembers.map((member, index) => (
-          <span key={index}>
+            <span key={index}>
               ({member})
-            {index !== teamMembers.length - 1 && ' '}
+              {index !== teamMembers.length - 1 && ' '}
             </span>
-        ))}
+          ))}
         </span>
       </div>
     </div>
